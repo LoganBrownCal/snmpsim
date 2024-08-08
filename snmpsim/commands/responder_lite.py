@@ -248,7 +248,7 @@ def main():
         try:
             with open(args.endpoints_from_file) as fl:
                 args.agent_udpv4_endpoints.extend(
-                    [handler.split("=", 1) for handler in fl.read().split()]
+                    [handler.split("=", 1)[1] for handler in fl.read().split()]
                 )
 
         except Exception as exc:
