@@ -58,10 +58,10 @@ def main():
     )
 
     parser.add_argument(
-        "--args-from-file",
+        "--endpoints-from-file",
         metavar="<FILE>",
         type=str,
-        help="Read SNMP engine(s) command-line configuration from this "
+        help="Read SNMP endpoints from this "
         "file. Can be useful when command-line is too long",
     )
 
@@ -210,7 +210,7 @@ def main():
         help="SNMP simulation data recordings directory.",
     )
 
-    endpoint_group = parser.add_mutually_exclusive_group(required=True)
+    endpoint_group = parser.add_mutually_exclusive_group(required=False)
 
     endpoint_group.add_argument(
         "--agent-udpv4-endpoint",
@@ -244,9 +244,9 @@ def main():
         args.variation_module_options
     )
 
-    if args.args_from_file:
+    if args.endpoints_from_file:
         try:
-            with open(args.args_from_file) as fl:
+            with open(args.endpoints_from_file) as fl:
                 args.agent_udpv4_endpoints.extend(
                     [handler.split("=", 1) for handler in fl.read().split()]
                 )
@@ -256,6 +256,10 @@ def main():
                 "ERROR: file %s opening failure: " "%s\r\n" % (args.args_from_file, exc)
             )
             help.print_usage(sys.stderr)
+            return 1
+    else:
+        if len(endpoint_group) == 0:
+            sys.stderr.write("ERROR: no endpoints specified.\n")
             return 1
 
     with daemon.PrivilegesOf(args.process_user, args.process_group):
