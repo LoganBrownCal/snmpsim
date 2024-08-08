@@ -58,6 +58,14 @@ def main():
     )
 
     parser.add_argument(
+        "--args-from-file",
+        metavar="<FILE>",
+        type=str,
+        help="Read SNMP engine(s) command-line configuration from this "
+        "file. Can be useful when command-line is too long",
+    )
+
+    parser.add_argument(
         "--debug",
         choices=pysnmp_debug.flagMap,
         action="append",
@@ -235,6 +243,20 @@ def main():
     variation_modules_options = variation.parse_modules_options(
         args.variation_module_options
     )
+
+    if args.args_from_file:
+        try:
+            with open(args.args_from_file) as fl:
+                args.agent_udpv4_endpoints.extend(
+                    [handler.split("=", 1) for handler in fl.read().split()]
+                )
+
+        except Exception as exc:
+            sys.stderr.write(
+                "ERROR: file %s opening failure: " "%s\r\n" % (args.args_from_file, exc)
+            )
+            help.print_usage(sys.stderr)
+            return 1
 
     with daemon.PrivilegesOf(args.process_user, args.process_group):
         proc_name = os.path.basename(sys.argv[0])
